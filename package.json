@@ -1,0 +1,52 @@
+{
+  "name": "@ronomon/direct-io",
+  "version": "1.0.0",
+  "description": "Direct IO helpers for block devices and regular files on FreeBSD, Linux, macOS and Windows.",
+  "main": "binding.node",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ronomon/direct-io.git"
+  },
+  "keywords": [
+    "_aligned_buffer",
+    "aligned buffer",
+    "alignment",
+    "block size",
+    "block device path",
+    "device size",
+    "direct memory access",
+    "disk cache",
+    "disk size",
+    "dma",
+    "F_NOCACHE",
+    "FSCTL_LOCK_VOLUME",
+    "FSCTL_UNLOCK_VOLUME",
+    "logical sector size",
+    "mechanical sympathy",
+    "O_DIRECT",
+    "O_DSYNC",
+    "O_EXCL",
+    "O_EXLOCK",
+    "O_SYNC",
+    "opening block device",
+    "physical sector size",
+    "posix_memalign",
+    "raw disk",
+    "throughput",
+    "volume",
+    "zero copy"
+  ],
+  "author": "Joran Dirk Greef",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ronomon/direct-io/issues"
+  },
+  "homepage": "https://github.com/ronomon/direct-io#readme",
+  "scripts": {
+    "postinstall": "node-gyp clean",
+    "test": "node test.js"
+  },
+  "dependencies": {
+    "nan": "^2.7.0"
+  }
+}
