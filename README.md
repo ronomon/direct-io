@@ -11,7 +11,7 @@ npm install @ronomon/direct-io
 
 ## Direct Memory Access
 
-Direct memory access bypasses the filesystem cache and avoids memory copies to
+Direct Memory Access bypasses the filesystem cache and avoids memory copies to
 and from kernel-space, writing and reading directly to and from the disk device
 cache. File I/O is done directly to and from user-space buffers regardless of
 whether the file descriptor is a block device or regular file. To enable direct
@@ -21,7 +21,7 @@ platform:
 **O_DIRECT** *(FreeBSD, Linux)*
 
 Provide as a flag to `fs.open()` when opening a block device or regular file to
-enable direct memory access.
+enable Direct Memory Access.
 
 **setF_NOCACHE(fd, value, callback)** *(macOS)*
 
@@ -35,10 +35,10 @@ on macOS).
 **Coming Soon** *(Windows)*
 
 Please note that it is not yet possible to use Node to open a block device or
-regular file for direct memory access on Windows. Please see
+regular file for Direct Memory Access on Windows. Please see
 [Node issue 15433](https://github.com/nodejs/node/issues/15433) and
 [Libuv issue 1550](https://github.com/libuv/libuv/issues/1550) for more
-information. I will add support for direct memory access on Windows as soon as
+information. I will add support for Direct Memory Access on Windows as soon as
 these issues are resolved.
 
 ## Buffer Alignment
