@@ -14,8 +14,8 @@ npm install @ronomon/direct-io
 Direct Memory Access bypasses the filesystem cache and avoids memory copies to
 and from kernel-space, writing and reading directly to and from the disk device
 cache. File I/O is done directly to and from user-space buffers regardless of
-whether the file descriptor is a block device or regular file. To enable direct
-memory access, use the following flag or method according to the respective
+whether the file descriptor is a block device or regular file. To enable Direct
+Memory Access, use the following flag or method according to the respective
 platform:
 
 **O_DIRECT** *(FreeBSD, Linux)*
@@ -43,8 +43,8 @@ these issues are resolved.
 
 ## Buffer Alignment
 
-When writing or reading to and from a block device or regular file using direct
-memory access, you need to make sure that your buffer is aligned correctly or
+When writing or reading to and from a block device or regular file using Direct
+Memory Access, you need to make sure that your buffer is aligned correctly or
 you may receive an `EINVAL` error or be switched back silently to non-DMA mode.
 
 To be aligned correctly, the address of the allocated memory must be a multiple
