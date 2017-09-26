@@ -57,9 +57,10 @@ methods will typically not meet these alignment requirements. Use
 
 Returns an aligned buffer:
 
-* `size` must be greater than 0.
+* `size` must be greater than 0, and a multiple of the physical sector size of
+the block device (typically 512 bytes or 4096 bytes).
 * `alignment` must be greater than 0, a power of two, and a multiple of the
-physical sector size of the block device (typically 512 bytes or 4096 bytes).
+physical sector size of the block device.
 * An alignment of 4096 bytes should be compatible with
 [Advanced Format](https://en.wikipedia.org/wiki/Advanced_Format) drives as well
 as backwards compatible with 512 sector drives. If you want to be sure, you
