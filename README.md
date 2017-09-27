@@ -66,12 +66,14 @@ physical sector size of the block device.
 as backwards compatible with 512 sector drives. If you want to be sure, you
 should use `getBlockDevice()` below to get the actual physical sector size of
 the block device.
+* Buffers are instances of Node's `Buffer` class and have the same methods and
+properties, except that they are also aligned.
 * Buffers are allocated using the appropriate C++ call (either
 [`posix_memalign`](http://man7.org/linux/man-pages/man3/posix_memalign.3.html)
 or [`_aligned_malloc`](https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/aligned-malloc)
 depending on the platform).
-* Buffers are not zero-filled. The contents of newly created aligned Buffers are
-unknown and *may contain sensitive data*.
+* **Buffers are not zero-filled.** The contents of newly created aligned Buffers
+are unknown and *may contain sensitive data*.
 * Buffers are automatically freed using the appropriate C++ call when garbage
 collected in V8 (either `free()` or `_aligned_free()` depending on the
 platform).
@@ -89,8 +91,8 @@ also open the block device or regular file using the `O_DSYNC` or `O_SYNC`
 flags. These are the equivalent of calling `fs.fdatasync()` or `fs.fsync()`
 respectively after every write. Please note that some file systems have had bugs
 in the past where calling `fs.fdatasync()` or `fs.fsync()` on a regular file
-would only force a flush if the page cache is dirty, so that bypassing the page
-cache using `O_DIRECT` means the disk device cache is never actually flushed.
+would only force a flush if the page cache was dirty, so that bypassing the page
+cache using `O_DIRECT` meant the disk device cache was never actually flushed.
 
 **O_DSYNC** *(FreeBSD, Linux, macOS)*
 
@@ -105,9 +107,9 @@ To understand the difference between `O_DSYNC` and `O_SYNC`, consider two pieces
 of file metadata: the file modification timestamp and the file length. All write
 operations will update the file modification timestamp, but only writes that add
 data to the end of the file will change the file length. The last modification
-timestamp is not needed to ensure that a read completes successfully, but the
-file length is needed. Thus, `O_DSYNC` will only flush updates to the file
-length metadata, whereas `O_SYNC` will also flush the file modification
+timestamp is not required to ensure that the data can be read back successfully,
+but the file length is needed. Thus, `O_DSYNC` will only flush updates to the
+file length metadata, whereas `O_SYNC` will also flush the file modification
 timestamp metadata.
 
 **Coming Soon** *(Windows)*
@@ -134,8 +136,9 @@ advertise a backwards compatible logical sector size of 512 bytes when in fact
 their physical sector size is 4096 bytes.
 
 * `physicalSectorSize` - The size of a physical sector in bytes. You should use
-this as the `alignment` parameter when getting aligned buffers so that reads and
-writes are always a multiple of the physical sector size.
+this to decide on the `size` and `alignment` parameters when getting aligned
+buffers so that reads and writes are always a multiple of the physical sector
+size.
 
 * `size` - The total size of the block device in bytes.
 
@@ -174,11 +177,11 @@ platforms it is good practice to lock the block device by providing either the
 
 Provide as a flag to `fs.open()` when opening a block device to obtain an
 exclusive mandatory (and not just advisory) lock. When opening a regular file,
-behavior is undefined. In general, the behavior of `O_EXCL` is undefined if it is used without
-`O_CREAT`. There is one exception: on Linux 2.6 and later, `O_EXCL` can be used
-without `O_CREAT` if the path refers to a block device. If the block device is
-in use by the system e.g. if it is mounted, `fs.open()` will fail with an
-`EBUSY` error.
+behavior is undefined. In general, the behavior of `O_EXCL` is undefined if it
+is used without `O_CREAT`. There is one exception: on Linux 2.6 and later,
+`O_EXCL` can be used without `O_CREAT` if the path refers to a block device. If
+the block device is in use by the system e.g. if it is mounted, `fs.open()` will
+fail with an `EBUSY` error.
 
 **O_EXLOCK** *(macOS)*
 
@@ -186,7 +189,9 @@ Provide as a flag to `fs.open()` when opening a block device or regular file to
 obtain an exclusive mandatory (and not just advisory) lock. When opening a
 regular file, `fs.open()` will block until any existing lock is released. While
 adding `O_NONBLOCK` can avoid this, it also introduces other IO semantics. Using
-`O_EXLOCK` should therefore be limited to opening a block device.
+`O_EXLOCK` should therefore be limited to opening a block device. If the block
+device is in use by the system e.g. if it is mounted, `fs.open()` will fail with
+an `EBUSY` error.
 
 **setFSCTL_LOCK_VOLUME(fd, value, callback)** *(Windows)*
 
