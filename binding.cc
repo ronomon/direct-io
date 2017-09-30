@@ -48,17 +48,22 @@ class GetBlockDeviceWorker : public Nan::AsyncWorker {
     }
 #endif
 #if defined(__APPLE__)
-    if (ioctl(fd, DKIOCGETBLOCKSIZE, &logical_sector_size) == -1) {
+    // https://opensource.apple.com/source/xnu/xnu-1699.26.8/bsd/sys/disk.h
+    uint32_t _logical_sector_size;
+    uint32_t _physical_sector_size;
+    uint64_t _logical_sectors;
+    if (ioctl(fd, DKIOCGETBLOCKSIZE, &_logical_sector_size) == -1) {
       return SetErrorMessage("DKIOCGETBLOCKSIZE failed"); 
     }
-    if (ioctl(fd, DKIOCGETPHYSICALBLOCKSIZE, &physical_sector_size) == -1) {
+    if (ioctl(fd, DKIOCGETPHYSICALBLOCKSIZE, &_physical_sector_size) == -1) {
       return SetErrorMessage("DKIOCGETPHYSICALBLOCKSIZE failed");
     }
-    uint64_t logical_sectors = 0;
-    if (ioctl(fd, DKIOCGETBLOCKCOUNT, &logical_sectors) == -1) {
+    if (ioctl(fd, DKIOCGETBLOCKCOUNT, &_logical_sectors) == -1) {
       return SetErrorMessage("DKIOCGETBLOCKCOUNT failed");
     }
-    size = logical_sector_size * logical_sectors;
+    logical_sector_size = (uint64_t) _logical_sector_size;
+    physical_sector_size = (uint64_t) _physical_sector_size;
+    size = logical_sector_size * _logical_sectors;
 #elif defined(_WIN32)
     HANDLE handle = uv_get_osfhandle(fd);
     if (handle == INVALID_HANDLE_VALUE) {
@@ -85,8 +90,8 @@ class GetBlockDeviceWorker : public Nan::AsyncWorker {
         NULL
       )
     ) {
-      logical_sector_size = (uint32_t) alignment.BytesPerLogicalSector;
-      physical_sector_size = (uint32_t) alignment.BytesPerPhysicalSector;
+      logical_sector_size = (uint64_t) alignment.BytesPerLogicalSector;
+      physical_sector_size = (uint64_t) alignment.BytesPerPhysicalSector;
     } else {
       return SetErrorMessage("IOCTL_STORAGE_QUERY_PROPERTY failed");
     }
@@ -107,26 +112,42 @@ class GetBlockDeviceWorker : public Nan::AsyncWorker {
       return SetErrorMessage("IOCTL_DISK_GET_DRIVE_GEOMETRY_EX failed");
     }
 #elif defined(__FreeBSD__) || defined(__FreeBSD_kernel_)
-    // See: pipermail/freebsd-hackers/2016-September/049974.html
-    if (ioctl(fd, DIOCGSECTORSIZE, &logical_sector_size) == -1) {
+    // https://github.com/freebsd/freebsd/blob/master/sys/sys/disk.h
+    unsigned int _logical_sector_size;
+    off_t _physical_sector_size;
+    off_t _size;
+    if (ioctl(fd, DIOCGSECTORSIZE, &_logical_sector_size) == -1) {
       return SetErrorMessage("DIOCGSECTORSIZE failed");
     }
-    if (ioctl(fd, DIOCGSTRIPESIZE, &physical_sector_size) == -1) {
+    if (ioctl(fd, DIOCGSTRIPESIZE, &_physical_sector_size) == -1) {
       return SetErrorMessage("DIOCGSTRIPESIZE failed");
     }
-    if (ioctl(fd, DIOCGMEDIASIZE, &size) == -1) {
+    if (ioctl(fd, DIOCGMEDIASIZE, &_size) == -1) {
       return SetErrorMessage("DIOCGMEDIASIZE failed");
     }
+    logical_sector_size = (uint64_t) _logical_sector_size;
+    physical_sector_size = (uint64_t) _physical_sector_size;
+    size = (uint64_t) _size;
 #else
-    if (ioctl(fd, BLKSSZGET, &logical_sector_size) == -1) {
+    // https://github.com/torvalds/linux/blob/master/block/ioctl.c
+    // We must use the correct type according to the control code passed:
+    // https://stackoverflow.com/questions/19747663/where-are-ioctl-
+    // parameters-such-as-0x1268-blksszget-actually-specified
+    int _logical_sector_size;
+    unsigned int _physical_sector_size;
+    if (ioctl(fd, BLKSSZGET, &_logical_sector_size) == -1) {
       return SetErrorMessage("BLKSSZGET failed");
     }
-    if (ioctl(fd, BLKPSZGET, &physical_sector_size) == -1) {
-      return SetErrorMessage("BLKPSZGET failed");
+    if (ioctl(fd, BLKPBSZGET, &_physical_sector_size) == -1) {
+      return SetErrorMessage("BLKPBSZGET failed");
     }
+    // The kernel expects size to be a u64 and defines u64 as uint64_t:
+    // https://github.com/torvalds/linux/blob/master/tools/include/linux/types.h
     if (ioctl(fd, BLKGETSIZE64, &size) == -1) {
       return SetErrorMessage("BLKGETSIZE64 failed");
     }
+    logical_sector_size = (uint64_t) _logical_sector_size;
+    physical_sector_size = (uint64_t) _physical_sector_size;
 #endif
   }
 
@@ -136,12 +157,12 @@ class GetBlockDeviceWorker : public Nan::AsyncWorker {
     Nan::Set(
       device,
       Nan::New<v8::String>("logicalSectorSize").ToLocalChecked(),
-      Nan::New<v8::Number>(logical_sector_size)
+      Nan::New<v8::Number>(static_cast<double>(logical_sector_size))
     );
     Nan::Set(
       device,
       Nan::New<v8::String>("physicalSectorSize").ToLocalChecked(),
-      Nan::New<v8::Number>(physical_sector_size)
+      Nan::New<v8::Number>(static_cast<double>(physical_sector_size))
     );
     Nan::Set(
       device,
@@ -157,8 +178,8 @@ class GetBlockDeviceWorker : public Nan::AsyncWorker {
 
  private:
   const int fd;
-  uint32_t logical_sector_size;
-  uint32_t physical_sector_size;
+  uint64_t logical_sector_size;
+  uint64_t physical_sector_size;
   uint64_t size;
 };
 
