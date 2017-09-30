@@ -28,8 +28,7 @@ enable Direct Memory Access.
 Turns data caching off or on for an open file descriptor for a block device or
 regular file:
 
-* A `value` of `1` turns data caching off (this is the equivalent of `O_DIRECT`
-on macOS).
+* A `value` of `1` turns data caching off (this is the equivalent of `O_DIRECT`).
 * A `value` of `0` turns data caching back on.
 
 **Coming Soon** *(Windows)*
