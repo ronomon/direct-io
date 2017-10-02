@@ -216,3 +216,14 @@ Conversely, success of this operation indicates that there are no open files.
 open files before dismounting.
 * Without a successful lock operation, a dismounted volume may be remounted by
 any process at any time.
+
+## Benchmark
+
+The performance of various block sizes and open flags can vary across operating
+systems and between hard drives and solid state drives. Use the included
+benchmark script to benchmark various block sizes and open flags on the local
+file system (by default) or on a specific block device or regular file:
+
+```
+node benchmark.js [device|file]
+```
