@@ -225,5 +225,304 @@ benchmark script to benchmark various block sizes and open flags on the local
 file system (by default) or on a specific block device or regular file:
 
 ```
-node benchmark.js [device|file]
+[sudo] node benchmark.js [device|file]
+```
+
+```
+$ sudo node benchmark.js /dev/sda
+
+      4096 | /dev/sda | BUFFERED                               |  2461.54 MB/s
+      4096 | /dev/sda | BUFFERED + ALIGNED                     |  1855.07 MB/s
+      4096 | /dev/sda | O_DIRECT                               |    58.69 MB/s
+      4096 | /dev/sda | AMORTIZED_FDATASYNC                    |   122.84 MB/s
+      4096 | /dev/sda | AMORTIZED_FDATASYNC + ALIGNED          |   120.87 MB/s
+      4096 | /dev/sda | AMORTIZED_FDATASYNC + O_DIRECT         |    57.92 MB/s
+      4096 | /dev/sda | AMORTIZED_FSYNC                        |   120.08 MB/s
+      4096 | /dev/sda | AMORTIZED_FSYNC + ALIGNED              |   121.79 MB/s
+      4096 | /dev/sda | AMORTIZED_FSYNC + O_DIRECT             |    59.70 MB/s
+      4096 | /dev/sda | FDATASYNC                              |     0.44 MB/s
+      4096 | /dev/sda | FDATASYNC + ALIGNED                    |     0.47 MB/s
+      4096 | /dev/sda | FDATASYNC + O_DIRECT                   |     0.47 MB/s
+      4096 | /dev/sda | FSYNC                                  |     0.47 MB/s
+      4096 | /dev/sda | FSYNC + ALIGNED                        |     0.47 MB/s
+      4096 | /dev/sda | FSYNC + O_DIRECT                       |     0.47 MB/s
+      4096 | /dev/sda | O_DSYNC                                |     0.47 MB/s
+      4096 | /dev/sda | O_DSYNC + ALIGNED                      |     0.47 MB/s
+      4096 | /dev/sda | O_DSYNC + O_DIRECT                     |     0.47 MB/s
+      4096 | /dev/sda | O_SYNC                                 |     0.47 MB/s
+      4096 | /dev/sda | O_SYNC + ALIGNED                       |     0.46 MB/s
+      4096 | /dev/sda | O_SYNC + O_DIRECT                      |     0.47 MB/s
+      8192 | /dev/sda | BUFFERED                               |  3121.95 MB/s
+      8192 | /dev/sda | BUFFERED + ALIGNED                     |  3047.62 MB/s
+      8192 | /dev/sda | O_DIRECT                               |    88.58 MB/s
+      8192 | /dev/sda | AMORTIZED_FDATASYNC                    |   123.43 MB/s
+      8192 | /dev/sda | AMORTIZED_FDATASYNC + ALIGNED          |   120.30 MB/s
+      8192 | /dev/sda | AMORTIZED_FDATASYNC + O_DIRECT         |    87.55 MB/s
+      8192 | /dev/sda | AMORTIZED_FSYNC                        |   120.08 MB/s
+      8192 | /dev/sda | AMORTIZED_FSYNC + ALIGNED              |   121.44 MB/s
+      8192 | /dev/sda | AMORTIZED_FSYNC + O_DIRECT             |    90.01 MB/s
+      8192 | /dev/sda | FDATASYNC                              |     0.91 MB/s
+      8192 | /dev/sda | FDATASYNC + ALIGNED                    |     0.93 MB/s
+      8192 | /dev/sda | FDATASYNC + O_DIRECT                   |     0.93 MB/s
+      8192 | /dev/sda | FSYNC                                  |     0.93 MB/s
+      8192 | /dev/sda | FSYNC + ALIGNED                        |     0.92 MB/s
+      8192 | /dev/sda | FSYNC + O_DIRECT                       |     0.92 MB/s
+      8192 | /dev/sda | O_DSYNC                                |     0.93 MB/s
+      8192 | /dev/sda | O_DSYNC + ALIGNED                      |     0.92 MB/s
+      8192 | /dev/sda | O_DSYNC + O_DIRECT                     |     0.93 MB/s
+      8192 | /dev/sda | O_SYNC                                 |     0.93 MB/s
+      8192 | /dev/sda | O_SYNC + ALIGNED                       |     0.92 MB/s
+      8192 | /dev/sda | O_SYNC + O_DIRECT                      |     0.92 MB/s
+     16384 | /dev/sda | BUFFERED                               |  3878.79 MB/s
+     16384 | /dev/sda | BUFFERED + ALIGNED                     |  3657.14 MB/s
+     16384 | /dev/sda | O_DIRECT                               |   125.74 MB/s
+     16384 | /dev/sda | AMORTIZED_FDATASYNC                    |   120.98 MB/s
+     16384 | /dev/sda | AMORTIZED_FDATASYNC + ALIGNED          |   119.85 MB/s
+     16384 | /dev/sda | AMORTIZED_FDATASYNC + O_DIRECT         |   121.90 MB/s
+     16384 | /dev/sda | AMORTIZED_FSYNC                        |   121.56 MB/s
+     16384 | /dev/sda | AMORTIZED_FSYNC + ALIGNED              |   120.53 MB/s
+     16384 | /dev/sda | AMORTIZED_FSYNC + O_DIRECT             |   121.79 MB/s
+     16384 | /dev/sda | FDATASYNC                              |     1.84 MB/s
+     16384 | /dev/sda | FDATASYNC + ALIGNED                    |     1.84 MB/s
+     16384 | /dev/sda | FDATASYNC + O_DIRECT                   |     1.84 MB/s
+     16384 | /dev/sda | FSYNC                                  |     1.85 MB/s
+     16384 | /dev/sda | FSYNC + ALIGNED                        |     1.84 MB/s
+     16384 | /dev/sda | FSYNC + O_DIRECT                       |     1.81 MB/s
+     16384 | /dev/sda | O_DSYNC                                |     1.84 MB/s
+     16384 | /dev/sda | O_DSYNC + ALIGNED                      |     1.84 MB/s
+     16384 | /dev/sda | O_DSYNC + O_DIRECT                     |     1.84 MB/s
+     16384 | /dev/sda | O_SYNC                                 |     1.83 MB/s
+     16384 | /dev/sda | O_SYNC + ALIGNED                       |     1.81 MB/s
+     16384 | /dev/sda | O_SYNC + O_DIRECT                      |     1.84 MB/s
+     32768 | /dev/sda | BUFFERED                               |  3657.14 MB/s
+     32768 | /dev/sda | BUFFERED + ALIGNED                     |  4129.03 MB/s
+     32768 | /dev/sda | O_DIRECT                               |   128.39 MB/s
+     32768 | /dev/sda | AMORTIZED_FDATASYNC                    |   120.98 MB/s
+     32768 | /dev/sda | AMORTIZED_FDATASYNC + ALIGNED          |   123.31 MB/s
+     32768 | /dev/sda | AMORTIZED_FDATASYNC + O_DIRECT         |   121.56 MB/s
+     32768 | /dev/sda | AMORTIZED_FSYNC                        |   122.02 MB/s
+     32768 | /dev/sda | AMORTIZED_FSYNC + ALIGNED              |   120.64 MB/s
+     32768 | /dev/sda | AMORTIZED_FSYNC + O_DIRECT             |   121.67 MB/s
+     32768 | /dev/sda | FDATASYNC                              |     3.63 MB/s
+     32768 | /dev/sda | FDATASYNC + ALIGNED                    |     3.64 MB/s
+     32768 | /dev/sda | FDATASYNC + O_DIRECT                   |     3.62 MB/s
+     32768 | /dev/sda | FSYNC                                  |     3.62 MB/s
+     32768 | /dev/sda | FSYNC + ALIGNED                        |     3.62 MB/s
+     32768 | /dev/sda | FSYNC + O_DIRECT                       |     3.62 MB/s
+     32768 | /dev/sda | O_DSYNC                                |     3.62 MB/s
+     32768 | /dev/sda | O_DSYNC + ALIGNED                      |     3.63 MB/s
+     32768 | /dev/sda | O_DSYNC + O_DIRECT                     |     3.62 MB/s
+     32768 | /dev/sda | O_SYNC                                 |     3.63 MB/s
+     32768 | /dev/sda | O_SYNC + ALIGNED                       |     3.62 MB/s
+     32768 | /dev/sda | O_SYNC + O_DIRECT                      |     3.63 MB/s
+     65536 | /dev/sda | BUFFERED                               |  4000.00 MB/s
+     65536 | /dev/sda | BUFFERED + ALIGNED                     |  4000.00 MB/s
+     65536 | /dev/sda | O_DIRECT                               |   128.13 MB/s
+     65536 | /dev/sda | AMORTIZED_FDATASYNC                    |   120.08 MB/s
+     65536 | /dev/sda | AMORTIZED_FDATASYNC + ALIGNED          |   120.08 MB/s
+     65536 | /dev/sda | AMORTIZED_FDATASYNC + O_DIRECT         |   120.64 MB/s
+     65536 | /dev/sda | AMORTIZED_FSYNC                        |   122.96 MB/s
+     65536 | /dev/sda | AMORTIZED_FSYNC + ALIGNED              |   122.72 MB/s
+     65536 | /dev/sda | AMORTIZED_FSYNC + O_DIRECT             |   121.10 MB/s
+     65536 | /dev/sda | FDATASYNC                              |     7.06 MB/s
+     65536 | /dev/sda | FDATASYNC + ALIGNED                    |     7.04 MB/s
+     65536 | /dev/sda | FDATASYNC + O_DIRECT                   |     7.07 MB/s
+     65536 | /dev/sda | FSYNC                                  |     7.06 MB/s
+     65536 | /dev/sda | FSYNC + ALIGNED                        |     7.05 MB/s
+     65536 | /dev/sda | FSYNC + O_DIRECT                       |     7.05 MB/s
+     65536 | /dev/sda | O_DSYNC                                |     7.02 MB/s
+     65536 | /dev/sda | O_DSYNC + ALIGNED                      |     7.05 MB/s
+     65536 | /dev/sda | O_DSYNC + O_DIRECT                     |     7.04 MB/s
+     65536 | /dev/sda | O_SYNC                                 |     7.04 MB/s
+     65536 | /dev/sda | O_SYNC + ALIGNED                       |     7.02 MB/s
+     65536 | /dev/sda | O_SYNC + O_DIRECT                      |     7.05 MB/s
+    131072 | /dev/sda | BUFFERED                               |  3764.71 MB/s
+    131072 | /dev/sda | BUFFERED + ALIGNED                     |  4000.00 MB/s
+    131072 | /dev/sda | O_DIRECT                               |   131.55 MB/s
+    131072 | /dev/sda | AMORTIZED_FDATASYNC                    |   118.19 MB/s
+    131072 | /dev/sda | AMORTIZED_FDATASYNC + ALIGNED          |   120.30 MB/s
+    131072 | /dev/sda | AMORTIZED_FDATASYNC + O_DIRECT         |   121.33 MB/s
+    131072 | /dev/sda | AMORTIZED_FSYNC                        |   119.18 MB/s
+    131072 | /dev/sda | AMORTIZED_FSYNC + ALIGNED              |   120.75 MB/s
+    131072 | /dev/sda | AMORTIZED_FSYNC + O_DIRECT             |   120.87 MB/s
+    131072 | /dev/sda | FDATASYNC                              |    13.32 MB/s
+    131072 | /dev/sda | FDATASYNC + ALIGNED                    |    13.37 MB/s
+    131072 | /dev/sda | FDATASYNC + O_DIRECT                   |    13.36 MB/s
+    131072 | /dev/sda | FSYNC                                  |    13.38 MB/s
+    131072 | /dev/sda | FSYNC + ALIGNED                        |    13.39 MB/s
+    131072 | /dev/sda | FSYNC + O_DIRECT                       |    13.37 MB/s
+    131072 | /dev/sda | O_DSYNC                                |    13.39 MB/s
+    131072 | /dev/sda | O_DSYNC + ALIGNED                      |    13.36 MB/s
+    131072 | /dev/sda | O_DSYNC + O_DIRECT                     |    13.38 MB/s
+    131072 | /dev/sda | O_SYNC                                 |    13.38 MB/s
+    131072 | /dev/sda | O_SYNC + ALIGNED                       |    13.38 MB/s
+    131072 | /dev/sda | O_SYNC + O_DIRECT                      |    13.37 MB/s
+    262144 | /dev/sda | BUFFERED                               |  3764.71 MB/s
+    262144 | /dev/sda | BUFFERED + ALIGNED                     |  3368.42 MB/s
+    262144 | /dev/sda | O_DIRECT                               |   128.13 MB/s
+    262144 | /dev/sda | AMORTIZED_FDATASYNC                    |   120.08 MB/s
+    262144 | /dev/sda | AMORTIZED_FDATASYNC + ALIGNED          |   120.64 MB/s
+    262144 | /dev/sda | AMORTIZED_FDATASYNC + O_DIRECT         |   123.79 MB/s
+    262144 | /dev/sda | AMORTIZED_FSYNC                        |   122.49 MB/s
+    262144 | /dev/sda | AMORTIZED_FSYNC + ALIGNED              |   115.11 MB/s
+    262144 | /dev/sda | AMORTIZED_FSYNC + O_DIRECT             |   122.84 MB/s
+    262144 | /dev/sda | FDATASYNC                              |    23.96 MB/s
+    262144 | /dev/sda | FDATASYNC + ALIGNED                    |    24.14 MB/s
+    262144 | /dev/sda | FDATASYNC + O_DIRECT                   |    24.37 MB/s
+    262144 | /dev/sda | FSYNC                                  |    24.31 MB/s
+    262144 | /dev/sda | FSYNC + ALIGNED                        |    24.30 MB/s
+    262144 | /dev/sda | FSYNC + O_DIRECT                       |    24.22 MB/s
+    262144 | /dev/sda | O_DSYNC                                |    24.23 MB/s
+    262144 | /dev/sda | O_DSYNC + ALIGNED                      |    24.22 MB/s
+    262144 | /dev/sda | O_DSYNC + O_DIRECT                     |    24.17 MB/s
+    262144 | /dev/sda | O_SYNC                                 |    24.27 MB/s
+    262144 | /dev/sda | O_SYNC + ALIGNED                       |    24.38 MB/s
+    262144 | /dev/sda | O_SYNC + O_DIRECT                      |    24.19 MB/s
+    524288 | /dev/sda | BUFFERED                               |  3657.14 MB/s
+    524288 | /dev/sda | BUFFERED + ALIGNED                     |  4000.00 MB/s
+    524288 | /dev/sda | O_DIRECT                               |   131.01 MB/s
+    524288 | /dev/sda | AMORTIZED_FDATASYNC                    |   122.96 MB/s
+    524288 | /dev/sda | AMORTIZED_FDATASYNC + ALIGNED          |   121.56 MB/s
+    524288 | /dev/sda | AMORTIZED_FDATASYNC + O_DIRECT         |   123.43 MB/s
+    524288 | /dev/sda | AMORTIZED_FSYNC                        |   121.90 MB/s
+    524288 | /dev/sda | AMORTIZED_FSYNC + ALIGNED              |   121.67 MB/s
+    524288 | /dev/sda | AMORTIZED_FSYNC + O_DIRECT             |   124.88 MB/s
+    524288 | /dev/sda | FDATASYNC                              |    40.87 MB/s
+    524288 | /dev/sda | FDATASYNC + ALIGNED                    |    40.86 MB/s
+    524288 | /dev/sda | FDATASYNC + O_DIRECT                   |    40.87 MB/s
+    524288 | /dev/sda | FSYNC                                  |    40.97 MB/s
+    524288 | /dev/sda | FSYNC + ALIGNED                        |    40.70 MB/s
+    524288 | /dev/sda | FSYNC + O_DIRECT                       |    40.61 MB/s
+    524288 | /dev/sda | O_DSYNC                                |    40.86 MB/s
+    524288 | /dev/sda | O_DSYNC + ALIGNED                      |    40.73 MB/s
+    524288 | /dev/sda | O_DSYNC + O_DIRECT                     |    41.04 MB/s
+    524288 | /dev/sda | O_SYNC                                 |    40.87 MB/s
+    524288 | /dev/sda | O_SYNC + ALIGNED                       |    40.82 MB/s
+    524288 | /dev/sda | O_SYNC + O_DIRECT                      |    40.92 MB/s
+   1048576 | /dev/sda | BUFFERED                               |  3657.14 MB/s
+   1048576 | /dev/sda | BUFFERED + ALIGNED                     |  4129.03 MB/s
+   1048576 | /dev/sda | O_DIRECT                               |   131.96 MB/s
+   1048576 | /dev/sda | AMORTIZED_FDATASYNC                    |   120.98 MB/s
+   1048576 | /dev/sda | AMORTIZED_FDATASYNC + ALIGNED          |   121.90 MB/s
+   1048576 | /dev/sda | AMORTIZED_FDATASYNC + O_DIRECT         |   124.51 MB/s
+   1048576 | /dev/sda | AMORTIZED_FSYNC                        |   121.90 MB/s
+   1048576 | /dev/sda | AMORTIZED_FSYNC + ALIGNED              |   115.42 MB/s
+   1048576 | /dev/sda | AMORTIZED_FSYNC + O_DIRECT             |   123.67 MB/s
+   1048576 | /dev/sda | FDATASYNC                              |    61.99 MB/s
+   1048576 | /dev/sda | FDATASYNC + ALIGNED                    |    62.38 MB/s
+   1048576 | /dev/sda | FDATASYNC + O_DIRECT                   |    61.60 MB/s
+   1048576 | /dev/sda | FSYNC                                  |    61.96 MB/s
+   1048576 | /dev/sda | FSYNC + ALIGNED                        |    61.90 MB/s
+   1048576 | /dev/sda | FSYNC + O_DIRECT                       |    61.60 MB/s
+   1048576 | /dev/sda | O_DSYNC                                |    62.44 MB/s
+   1048576 | /dev/sda | O_DSYNC + ALIGNED                      |    61.84 MB/s
+   1048576 | /dev/sda | O_DSYNC + O_DIRECT                     |    61.87 MB/s
+   1048576 | /dev/sda | O_SYNC                                 |    61.72 MB/s
+   1048576 | /dev/sda | O_SYNC + ALIGNED                       |    61.60 MB/s
+   1048576 | /dev/sda | O_SYNC + O_DIRECT                      |    62.38 MB/s
+   2097152 | /dev/sda | BUFFERED                               |  3555.56 MB/s
+   2097152 | /dev/sda | BUFFERED + ALIGNED                     |  4000.00 MB/s
+   2097152 | /dev/sda | O_DIRECT                               |   128.64 MB/s
+   2097152 | /dev/sda | AMORTIZED_FDATASYNC                    |   122.61 MB/s
+   2097152 | /dev/sda | AMORTIZED_FDATASYNC + ALIGNED          |   120.30 MB/s
+   2097152 | /dev/sda | AMORTIZED_FDATASYNC + O_DIRECT         |   122.84 MB/s
+   2097152 | /dev/sda | AMORTIZED_FSYNC                        |   120.08 MB/s
+   2097152 | /dev/sda | AMORTIZED_FSYNC + ALIGNED              |   122.61 MB/s
+   2097152 | /dev/sda | AMORTIZED_FSYNC + O_DIRECT             |   123.31 MB/s
+   2097152 | /dev/sda | FDATASYNC                              |    61.72 MB/s
+   2097152 | /dev/sda | FDATASYNC + ALIGNED                    |    62.11 MB/s
+   2097152 | /dev/sda | FDATASYNC + O_DIRECT                   |    61.87 MB/s
+   2097152 | /dev/sda | FSYNC                                  |    61.48 MB/s
+   2097152 | /dev/sda | FSYNC + ALIGNED                        |    62.11 MB/s
+   2097152 | /dev/sda | FSYNC + O_DIRECT                       |    62.14 MB/s
+   2097152 | /dev/sda | O_DSYNC                                |    61.72 MB/s
+   2097152 | /dev/sda | O_DSYNC + ALIGNED                      |    62.11 MB/s
+   2097152 | /dev/sda | O_DSYNC + O_DIRECT                     |    62.44 MB/s
+   2097152 | /dev/sda | O_SYNC                                 |    62.20 MB/s
+   2097152 | /dev/sda | O_SYNC + ALIGNED                       |    61.90 MB/s
+   2097152 | /dev/sda | O_SYNC + O_DIRECT                      |    62.11 MB/s
+   4194304 | /dev/sda | BUFFERED                               |  3459.46 MB/s
+   4194304 | /dev/sda | BUFFERED + ALIGNED                     |  3764.71 MB/s
+   4194304 | /dev/sda | O_DIRECT                               |   129.95 MB/s
+   4194304 | /dev/sda | AMORTIZED_FDATASYNC                    |   120.08 MB/s
+   4194304 | /dev/sda | AMORTIZED_FDATASYNC + ALIGNED          |   121.21 MB/s
+   4194304 | /dev/sda | AMORTIZED_FDATASYNC + O_DIRECT         |   123.67 MB/s
+   4194304 | /dev/sda | AMORTIZED_FSYNC                        |   123.67 MB/s
+   4194304 | /dev/sda | AMORTIZED_FSYNC + ALIGNED              |   122.14 MB/s
+   4194304 | /dev/sda | AMORTIZED_FSYNC + O_DIRECT             |   122.96 MB/s
+   4194304 | /dev/sda | FDATASYNC                              |    83.39 MB/s
+   4194304 | /dev/sda | FDATASYNC + ALIGNED                    |    82.85 MB/s
+   4194304 | /dev/sda | FDATASYNC + O_DIRECT                   |    83.82 MB/s
+   4194304 | /dev/sda | FSYNC                                  |    83.06 MB/s
+   4194304 | /dev/sda | FSYNC + ALIGNED                        |    82.90 MB/s
+   4194304 | /dev/sda | FSYNC + O_DIRECT                       |    82.85 MB/s
+   4194304 | /dev/sda | O_DSYNC                                |    83.06 MB/s
+   4194304 | /dev/sda | O_DSYNC + ALIGNED                      |    83.82 MB/s
+   4194304 | /dev/sda | O_DSYNC + O_DIRECT                     |    82.47 MB/s
+   4194304 | /dev/sda | O_SYNC                                 |    82.63 MB/s
+   4194304 | /dev/sda | O_SYNC + ALIGNED                       |    82.10 MB/s
+   4194304 | /dev/sda | O_SYNC + O_DIRECT                      |    81.58 MB/s
+   8388608 | /dev/sda | BUFFERED                               |  2612.24 MB/s
+   8388608 | /dev/sda | BUFFERED + ALIGNED                     |  2976.74 MB/s
+   8388608 | /dev/sda | O_DIRECT                               |   132.09 MB/s
+   8388608 | /dev/sda | AMORTIZED_FDATASYNC                    |   115.52 MB/s
+   8388608 | /dev/sda | AMORTIZED_FDATASYNC + ALIGNED          |   121.10 MB/s
+   8388608 | /dev/sda | AMORTIZED_FDATASYNC + O_DIRECT         |   119.18 MB/s
+   8388608 | /dev/sda | AMORTIZED_FSYNC                        |   117.32 MB/s
+   8388608 | /dev/sda | AMORTIZED_FSYNC + ALIGNED              |   120.75 MB/s
+   8388608 | /dev/sda | AMORTIZED_FSYNC + O_DIRECT             |   119.07 MB/s
+   8388608 | /dev/sda | FDATASYNC                              |   100.23 MB/s
+   8388608 | /dev/sda | FDATASYNC + ALIGNED                    |    98.92 MB/s
+   8388608 | /dev/sda | FDATASYNC + O_DIRECT                   |    94.67 MB/s
+   8388608 | /dev/sda | FSYNC                                  |    94.81 MB/s
+   8388608 | /dev/sda | FSYNC + ALIGNED                        |    95.31 MB/s
+   8388608 | /dev/sda | FSYNC + O_DIRECT                       |    95.31 MB/s
+   8388608 | /dev/sda | O_DSYNC                                |    93.64 MB/s
+   8388608 | /dev/sda | O_DSYNC + ALIGNED                      |    96.39 MB/s
+   8388608 | /dev/sda | O_DSYNC + O_DIRECT                     |    95.88 MB/s
+   8388608 | /dev/sda | O_SYNC                                 |    93.70 MB/s
+   8388608 | /dev/sda | O_SYNC + ALIGNED                       |    97.64 MB/s
+   8388608 | /dev/sda | O_SYNC + O_DIRECT                      |    94.60 MB/s
+  16777216 | /dev/sda | BUFFERED                               |  1939.39 MB/s
+  16777216 | /dev/sda | BUFFERED + ALIGNED                     |  2723.40 MB/s
+  16777216 | /dev/sda | O_DIRECT                               |   130.61 MB/s
+  16777216 | /dev/sda | AMORTIZED_FDATASYNC                    |   121.67 MB/s
+  16777216 | /dev/sda | AMORTIZED_FDATASYNC + ALIGNED          |   114.80 MB/s
+  16777216 | /dev/sda | AMORTIZED_FDATASYNC + O_DIRECT         |   123.55 MB/s
+  16777216 | /dev/sda | AMORTIZED_FSYNC                        |   120.98 MB/s
+  16777216 | /dev/sda | AMORTIZED_FSYNC + ALIGNED              |   122.61 MB/s
+  16777216 | /dev/sda | AMORTIZED_FSYNC + O_DIRECT             |   124.03 MB/s
+  16777216 | /dev/sda | FDATASYNC                              |   111.21 MB/s
+  16777216 | /dev/sda | FDATASYNC + ALIGNED                    |   112.68 MB/s
+  16777216 | /dev/sda | FDATASYNC + O_DIRECT                   |   110.34 MB/s
+  16777216 | /dev/sda | FSYNC                                  |   111.30 MB/s
+  16777216 | /dev/sda | FSYNC + ALIGNED                        |   112.78 MB/s
+  16777216 | /dev/sda | FSYNC + O_DIRECT                       |   111.89 MB/s
+  16777216 | /dev/sda | O_DSYNC                                |   108.20 MB/s
+  16777216 | /dev/sda | O_DSYNC + ALIGNED                      |   111.79 MB/s
+  16777216 | /dev/sda | O_DSYNC + O_DIRECT                     |   111.99 MB/s
+  16777216 | /dev/sda | O_SYNC                                 |   106.67 MB/s
+  16777216 | /dev/sda | O_SYNC + ALIGNED                       |   111.89 MB/s
+  16777216 | /dev/sda | O_SYNC + O_DIRECT                      |   111.01 MB/s
+  33554432 | /dev/sda | BUFFERED                               |  2245.61 MB/s
+  33554432 | /dev/sda | BUFFERED + ALIGNED                     |  2461.54 MB/s
+  33554432 | /dev/sda | O_DIRECT                               |   127.62 MB/s
+  33554432 | /dev/sda | AMORTIZED_FDATASYNC                    |   118.19 MB/s
+  33554432 | /dev/sda | AMORTIZED_FDATASYNC + ALIGNED          |   120.75 MB/s
+  33554432 | /dev/sda | AMORTIZED_FDATASYNC + O_DIRECT         |   121.56 MB/s
+  33554432 | /dev/sda | AMORTIZED_FSYNC                        |   118.74 MB/s
+  33554432 | /dev/sda | AMORTIZED_FSYNC + ALIGNED              |   121.21 MB/s
+  33554432 | /dev/sda | AMORTIZED_FSYNC + O_DIRECT             |   123.55 MB/s
+  33554432 | /dev/sda | FDATASYNC                              |   113.58 MB/s
+  33554432 | /dev/sda | FDATASYNC + ALIGNED                    |   116.58 MB/s
+  33554432 | /dev/sda | FDATASYNC + O_DIRECT                   |   115.84 MB/s
+  33554432 | /dev/sda | FSYNC                                  |   115.52 MB/s
+  33554432 | /dev/sda | FSYNC + ALIGNED                        |   115.32 MB/s
+  33554432 | /dev/sda | FSYNC + O_DIRECT                       |   116.05 MB/s
+  33554432 | /dev/sda | O_DSYNC                                |   116.68 MB/s
+  33554432 | /dev/sda | O_DSYNC + ALIGNED                      |   116.47 MB/s
+  33554432 | /dev/sda | O_DSYNC + O_DIRECT                     |   116.26 MB/s
+  33554432 | /dev/sda | O_SYNC                                 |   114.59 MB/s
+  33554432 | /dev/sda | O_SYNC + ALIGNED                       |   116.36 MB/s
+  33554432 | /dev/sda | O_SYNC + O_DIRECT                      |   116.05 MB/s
 ```
