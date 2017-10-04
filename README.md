@@ -217,6 +217,21 @@ open files before dismounting.
 * Without a successful lock operation, a dismounted volume may be remounted by
 any process at any time.
 
+## Locking a Regular File
+
+**setFlock(fd, value, callback)** *(FreeBSD, Linux, macOS)*
+
+Apply or remove an advisory lock on an open regular file:
+
+* A `value` of `1` locks the regular file using `flock(LOCK_EX | LOCK_NB)`.
+* A `value` of `0` unlocks the regular file using `flock(LOCK_UN)`.
+* Advisory locks allow cooperating processes to perform consistent operations
+but do not guarantee consistency since other processes may not check for the
+presence of advisory locks.
+* A locked regular file remains locked until the application unlocks the regular
+file, or until the file descriptor is closed, either directly through
+`fs.close()`, or indirectly when the process terminates.
+
 ## Benchmark
 
 The performance of various block sizes and open flags can vary across operating

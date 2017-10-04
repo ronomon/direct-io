@@ -1,8 +1,10 @@
 #include <nan.h>
 #include <stdint.h>
 #if defined(__APPLE__)
+#include <errno.h>
 #include <fcntl.h>
 #include <sys/disk.h>
+#include <sys/file.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 #elif defined(_WIN32)
@@ -220,6 +222,56 @@ class SetF_NOCACHEWorker : public Nan::AsyncWorker {
 };
 #endif
 
+#if !defined(_WIN32)
+class SetFlockWorker : public Nan::AsyncWorker {
+ public:
+  SetFlockWorker(
+    const int fd,
+    const int value,
+    Nan::Callback *callback
+  ) : Nan::AsyncWorker(callback),
+      fd(fd),
+      value(value) {}
+
+  ~SetFlockWorker() {}
+
+  void Execute() {
+    // Place an exclusive lock. Only one process may hold an exclusive lock for
+    // a given file at a given time. A call to flock() may block if an
+    // incompatible lock is held by another process. We use LOCK_NB to make a
+    // non-blocking request.
+    int result = flock(fd, value == 0 ? LOCK_UN : LOCK_EX | LOCK_NB);
+    if (result != 0) {
+      if (errno == EWOULDBLOCK) {
+        SetErrorMessage("EWOULDBLOCK, the file is already locked");
+      } else if (errno == EBADF) {
+        SetErrorMessage("EBADF, fd is an invalid file descriptor");
+      } else if (errno == EINTR) {
+        SetErrorMessage("EINTR, the call was interrupted by a signal");
+      } else if (errno == EINVAL) {
+        SetErrorMessage("EINVAL, fd does not refer to a file");
+      } else if (errno == ENOTSUP) {
+        SetErrorMessage("ENOTSUP, fd is not of the correct type");
+      } else {
+        SetErrorMessage("unable to obtain an exclusive lock");
+      }
+    }
+  }
+
+  void HandleOKCallback () {
+    Nan::HandleScope scope;
+    v8::Local<v8::Value> argv[] = {
+      Nan::Undefined()
+    };
+    callback->Call(1, argv);
+  }
+
+ private:
+  const int fd;
+  const int value;
+};
+#endif
+
 #if defined(_WIN32)
 class SetFSCTL_LOCK_VOLUMEWorker : public Nan::AsyncWorker {
  public:
@@ -350,6 +402,28 @@ NAN_METHOD(setF_NOCACHE) {
 #endif
 }
 
+NAN_METHOD(setFlock) {
+#if defined(_WIN32)
+  return Nan::ThrowError("not supported on windows");
+#else
+  if (
+    info.Length() != 3 ||
+    !info[0]->IsUint32() ||
+    !info[1]->IsUint32() ||
+    !info[2]->IsFunction()
+  ) {
+    return Nan::ThrowError(
+      "bad arguments, expected: (uint32 fd, uint32 value, function callback)"
+    );
+  }
+  const int fd = info[0]->Uint32Value();
+  const int value = info[1]->Uint32Value();
+  if (value != 0 && value != 1) return Nan::ThrowError("value must be 0 or 1");
+  Nan::Callback *callback = new Nan::Callback(info[2].As<v8::Function>());
+  Nan::AsyncQueueWorker(new SetFlockWorker(fd, value, callback));  
+#endif
+}
+
 NAN_METHOD(setFSCTL_LOCK_VOLUME) {
 #if defined(_WIN32)
   if (
@@ -391,6 +465,7 @@ NAN_MODULE_INIT(Init) {
   NAN_EXPORT(target, getAlignedBuffer);
   NAN_EXPORT(target, getBlockDevice);
   NAN_EXPORT(target, setF_NOCACHE);
+  NAN_EXPORT(target, setFlock);
   NAN_EXPORT(target, setFSCTL_LOCK_VOLUME);
 }
 
