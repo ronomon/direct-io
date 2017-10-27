@@ -1,6 +1,6 @@
 {
   "name": "@ronomon/direct-io",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "description": "Direct IO helpers for block devices and regular files on FreeBSD, Linux, macOS and Windows.",
   "main": "binding.node",
   "repository": {
