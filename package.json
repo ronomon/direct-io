@@ -46,7 +46,7 @@
     "postinstall": "node-gyp clean"
   },
   "dependencies": {
-    "@ronomon/queue": "^2.1.0",
+    "@ronomon/queue": "^3.0.0",
     "nan": "^2.7.0"
   }
 }
