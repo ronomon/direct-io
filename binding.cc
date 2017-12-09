@@ -1,30 +1,78 @@
 #include <nan.h>
 #include <stdint.h>
 #if defined(__APPLE__)
-#include <errno.h>
-#include <fcntl.h>
 #include <sys/disk.h>
-#include <sys/file.h>
-#include <sys/ioctl.h>
-#include <sys/stat.h>
 #elif defined(_WIN32)
 #include <io.h>
 #include <malloc.h>
 #include <winioctl.h>
+#elif defined(__FreeBSD__) || defined(__FreeBSD_kernel_)
+#include <sys/disk.h>
 #else
-#include <errno.h>
 #include <linux/fs.h>
-#include <stdlib.h>
+#include <scsi/sg.h>
 #include <sys/file.h>
 #include <sys/ioctl.h>
-#include <sys/stat.h>
 #endif
+
+#define SERIAL_NUMBER_MAX 256
 
 void free_aligned_buffer(char *buffer, void *hint) {
 #if defined(_WIN32)
   _aligned_free(buffer);
 #else
   free(buffer);
+#endif
+}
+
+int read_serial_number(int fd, char *serial_number, int &serial_number_size) {
+#if defined(__APPLE__)
+  return 0;
+#elif defined(_WIN32)
+  return 0;
+#elif defined(__FreeBSD__) || defined(__FreeBSD_kernel_)
+  if (ioctl(fd, DIOCGIDENT, serial_number) != 0) return -1;
+  serial_number_size = strlen(serial_number);
+  return 0;
+#else
+  int version;
+  // SATA-only alternative: http://www.cplusplus.com/forum/general/191532
+  if (ioctl(fd, SG_GET_VERSION_NUM, &version) != 0) return -1;
+  if (version < 30000) return -2;
+  
+  sg_io_hdr_t io_hdr;
+  unsigned char dxferp[255];
+  unsigned char cmdp[6] = { 0x12, 0x01, 0x80, 0x00, sizeof(dxferp), 0x00 };
+  unsigned char sbp[32];
+  int length;
+
+  memset(&io_hdr, 0, sizeof(sg_io_hdr_t));
+  // See: http://www.tldp.org/HOWTO/SCSI-Generic-HOWTO/sg_io_hdr_t.html
+  io_hdr.interface_id = 'S';
+  io_hdr.dxfer_direction = SG_DXFER_FROM_DEV;
+  io_hdr.cmd_len = sizeof(cmdp);
+  io_hdr.mx_sb_len = sizeof(sbp);
+  io_hdr.dxfer_len = sizeof(dxferp);
+  io_hdr.dxferp = dxferp;
+  io_hdr.cmdp = cmdp;
+  io_hdr.sbp = sbp;
+  io_hdr.timeout = 5000;
+
+  if (ioctl(fd, SG_IO, &io_hdr) != 0) return -3;
+  if ((io_hdr.info & SG_INFO_OK_MASK) != SG_INFO_OK) return -4;
+  if (io_hdr.masked_status) return -5;
+  if (io_hdr.host_status) return -6;
+  if (io_hdr.driver_status) return -7;
+  if (dxferp[1] != 0x80) return -8;
+  
+  length = SERIAL_NUMBER_MAX;
+  if (dxferp[3] < length) length = dxferp[3];
+  while (serial_number_size < length) {
+    serial_number[serial_number_size] = (char) dxferp[4 + serial_number_size];
+    serial_number_size++;
+  }
+  if (serial_number_size != (int) strlen(serial_number)) return -9;
+  return 0;
 #endif
 }
 
@@ -45,8 +93,12 @@ class GetBlockDeviceWorker : public Nan::AsyncWorker {
     if (fstat(fd, &st) == -1) {
       return SetErrorMessage("fstat failed");
     }
-    if ((st.st_mode & S_IFMT) != S_IFBLK) {
-      return SetErrorMessage("fd is not a block device");
+    // FreeBSD has character devices and no block devices:
+    if (
+      (st.st_mode & S_IFMT) != S_IFBLK &&
+      (st.st_mode & S_IFMT) != S_IFCHR
+    ) {
+      return SetErrorMessage("fd is not a block or character device");
     }
 #endif
 #if defined(__APPLE__)
@@ -151,6 +203,9 @@ class GetBlockDeviceWorker : public Nan::AsyncWorker {
     logical_sector_size = (uint64_t) _logical_sector_size;
     physical_sector_size = (uint64_t) _physical_sector_size;
 #endif
+    if (read_serial_number(fd, serial_number, serial_number_size) != 0) {
+      return SetErrorMessage("read_serial_number failed");
+    }
   }
 
   void HandleOKCallback () {
@@ -165,6 +220,11 @@ class GetBlockDeviceWorker : public Nan::AsyncWorker {
       device,
       Nan::New<v8::String>("physicalSectorSize").ToLocalChecked(),
       Nan::New<v8::Number>(static_cast<double>(physical_sector_size))
+    );
+    Nan::Set(
+      device,
+      Nan::New<v8::String>("serialNumber").ToLocalChecked(),
+      Nan::New<v8::String>(serial_number, serial_number_size).ToLocalChecked()
     );
     Nan::Set(
       device,
@@ -183,6 +243,8 @@ class GetBlockDeviceWorker : public Nan::AsyncWorker {
   uint64_t logical_sector_size;
   uint64_t physical_sector_size;
   uint64_t size;
+  char serial_number[SERIAL_NUMBER_MAX];
+  int serial_number_size = 0;
 };
 
 #if defined(__APPLE__)
