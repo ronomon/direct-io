@@ -137,7 +137,7 @@ their physical sector size is 4096 bytes.
 * `physicalSectorSize` - The size of a physical sector in bytes. You should use
 this to decide on the `size` and `alignment` parameters when getting aligned
 buffers so that reads and writes are always a multiple of the physical sector
-size. *Note: Some virtual devices may report a `physicalSectorSize` of 0 bytes.*
+size. **Some virtual devices may report a `physicalSectorSize` of 0 bytes.**
 
 * `serialNumber` - The serial number reported by the device. *(FreeBSD, Linux)*
 
