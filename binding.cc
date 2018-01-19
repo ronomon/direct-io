@@ -37,8 +37,14 @@ int read_serial_number(int fd, char *serial_number, int &serial_number_size) {
 #else
   int version;
   // SATA-only alternative: http://www.cplusplus.com/forum/general/191532
-  if (ioctl(fd, SG_GET_VERSION_NUM, &version) != 0) return -1;
-  if (version < 30000) return -2;
+  if (ioctl(fd, SG_GET_VERSION_NUM, &version) != 0) {
+    printf("Error: read_serial_number: SG_GET_VERSION_NUM\n");
+    return -1;
+  }
+  if (version < 30000) {
+    printf("Error: read_serial_number: version < 30000\n");
+    return -2;
+  }
   
   sg_io_hdr_t io_hdr;
   unsigned char dxferp[255];
@@ -58,12 +64,30 @@ int read_serial_number(int fd, char *serial_number, int &serial_number_size) {
   io_hdr.sbp = sbp;
   io_hdr.timeout = 5000;
 
-  if (ioctl(fd, SG_IO, &io_hdr) != 0) return -3;
-  if ((io_hdr.info & SG_INFO_OK_MASK) != SG_INFO_OK) return -4;
-  if (io_hdr.masked_status) return -5;
-  if (io_hdr.host_status) return -6;
-  if (io_hdr.driver_status) return -7;
-  if (dxferp[1] != 0x80) return -8;
+  if (ioctl(fd, SG_IO, &io_hdr) != 0) {
+    printf("Error: read_serial_number: SG_IO\n");
+    return -3;
+  }
+  if ((io_hdr.info & SG_INFO_OK_MASK) != SG_INFO_OK) {
+    printf("Error: read_serial_number: SG_INFO_OK_MASK\n");
+    return -4;
+  }
+  if (io_hdr.masked_status) {
+    printf("Error: read_serial_number: masked_status\n");
+    return -5;
+  }
+  if (io_hdr.host_status) {
+    printf("Error: read_serial_number: host_status\n");
+    return -6;
+  }
+  if (io_hdr.driver_status) {
+    printf("Error: read_serial_number: driver_status\n");
+    return -7;
+  }
+  if (dxferp[1] != 0x80) {
+    printf("Error: read_serial_number: dxferp[1] != 0x80\n");
+    return -8;
+  }
   
   length = SERIAL_NUMBER_MAX;
   if (dxferp[3] < length) length = dxferp[3];
@@ -71,7 +95,10 @@ int read_serial_number(int fd, char *serial_number, int &serial_number_size) {
     serial_number[serial_number_size] = (char) dxferp[4 + serial_number_size];
     serial_number_size++;
   }
-  if (serial_number_size != (int) strlen(serial_number)) return -9;
+  if (serial_number_size != (int) strlen(serial_number)) {
+    printf("Error: read_serial_number: mismatching size\n");
+    return -9;
+  }
   return 0;
 #endif
 }
