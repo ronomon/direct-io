@@ -73,31 +73,27 @@ int read_serial_number(int fd, char *serial_number, int &serial_number_size) {
     return -4;
   }
   if (io_hdr.masked_status) {
-    printf("Error: read_serial_number: masked_status\n");
+    printf("Error: read_serial_number: status=0x%x\n", io_hdr.status);
+    printf("Error: read_serial_number: masked=0x%x\n", io_hdr.masked_status);
     return -5;
   }
   if (io_hdr.host_status) {
-    printf("Error: read_serial_number: host_status\n");
+    printf("Error: read_serial_number: host=0x%x\n", io_hdr.host_status);
     return -6;
   }
   if (io_hdr.driver_status) {
-    printf("Error: read_serial_number: driver_status\n");
+    printf("Error: read_serial_number: driver=0x%x\n", io_hdr.driver_status);
     return -7;
   }
   if (dxferp[1] != 0x80) {
     printf("Error: read_serial_number: dxferp[1] != 0x80\n");
     return -8;
   }
-  
   length = SERIAL_NUMBER_MAX;
   if (dxferp[3] < length) length = dxferp[3];
   while (serial_number_size < length) {
     serial_number[serial_number_size] = (char) dxferp[4 + serial_number_size];
     serial_number_size++;
-  }
-  if (serial_number_size != (int) strlen(serial_number)) {
-    printf("Error: read_serial_number: mismatching size\n");
-    return -9;
   }
   return 0;
 #endif
