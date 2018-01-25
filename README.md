@@ -15,13 +15,17 @@ Direct Memory Access bypasses the filesystem cache and avoids memory copies to
 and from kernel-space, writing and reading directly to and from the disk device
 cache. File I/O is done directly to and from user-space buffers regardless of
 whether the file descriptor is a block device or regular file. To enable Direct
-Memory Access, use the following flag or method according to the respective
-platform:
+Memory Access, use the following open flag or method according to the platform:
 
-**O_DIRECT** *(FreeBSD, Linux)*
+**O_DIRECT** *(FreeBSD, Linux, Windows)*
 
 Provide as a flag to `fs.open()` when opening a block device or regular file to
 enable Direct Memory Access.
+
+On Windows, `O_DIRECT` is supported as of
+[libuv 1.16.0](https://github.com/libuv/libuv/commit/4b666bd2d82a51f1c809b2703a91679789c1ec01)
+(i.e. Node 9.2.0 and up), where `O_DIRECT` is mapped to
+[FILE_FLAG_NO_BUFFERING](https://msdn.microsoft.com/en-us/library/windows/desktop/cc644950(v=vs.85).aspx).
 
 **setF_NOCACHE(fd, value, callback)** *(macOS)*
 
@@ -42,15 +46,6 @@ populating the cache yourself.
 Alternatively, if you want to ensure initial boot conditions with a cold disk
 buffer cache, you can purge the entire cache for all files using `sudo purge`.
 Please note that this will affect system performance.
-
-**Coming Soon** *(Windows)*
-
-Please note that it is not yet possible to use Node to open a block device or
-regular file for Direct Memory Access on Windows. Please see
-[Node issue 15433](https://github.com/nodejs/node/issues/15433) and
-[Libuv issue 1550](https://github.com/libuv/libuv/issues/1550) for more
-information. I will add support for Direct Memory Access on Windows as soon as
-these issues are resolved.
 
 ## Buffer Alignment
 
@@ -99,18 +94,18 @@ Direct Memory Access will write directly to the disk device cache but not
 necessarily to the disk device storage medium. To ensure that your data is
 flushed from the disk device cache to the disk device storage medium, you should
 also open the block device or regular file using the `O_DSYNC` or `O_SYNC`
-flags. These are the equivalent of calling `fs.fdatasync()` or `fs.fsync()`
+open flags. These are the equivalent of calling `fs.fdatasync()` or `fs.fsync()`
 respectively after every write. Please note that some file systems have had bugs
 in the past where calling `fs.fdatasync()` or `fs.fsync()` on a regular file
 would only force a flush if the page cache was dirty, so that bypassing the page
 cache using `O_DIRECT` meant the disk device cache was never actually flushed.
 
-**O_DSYNC** *(FreeBSD, Linux, macOS)*
+**O_DSYNC** *(FreeBSD, Linux, macOS, Windows)*
 
 Flushes all data and only required associated metadata to the underlying
 hardware.
 
-**O_SYNC** *(FreeBSD, Linux, macOS)*
+**O_SYNC** *(FreeBSD, Linux, macOS, Windows)*
 
 Flushes all data and any associated metadata to the underlying hardware.
 
@@ -123,14 +118,10 @@ but the file length is needed. Thus, `O_DSYNC` will only flush updates to the
 file length metadata, whereas `O_SYNC` will also flush the file modification
 timestamp metadata.
 
-**Coming Soon** *(Windows)*
-
-Please note that it is not yet possible to use Node to open a block device or
-regular file for synchronous writes on Windows. Please see
-[Node issue 15433](https://github.com/nodejs/node/issues/15433) and
-[Libuv issue 1550](https://github.com/libuv/libuv/issues/1550) for more
-information. I will add support for synchronous writes on Windows as soon as
-these issues are resolved.
+On Windows, synchronous writes are supported as of
+[libuv 1.16.0](https://github.com/libuv/libuv/commit/4b666bd2d82a51f1c809b2703a91679789c1ec01)
+(i.e. Node 9.2.0 and up), where `O_DSYNC` and `O_SYNC` are both mapped to
+[FILE_FLAG_WRITE_THROUGH](https://support.microsoft.com/en-za/help/99794/info-file-flag-write-through-and-file-flag-no-buffering).
 
 ## Block Device Size and Sector Sizes
 
@@ -181,10 +172,11 @@ You can use these shell commands to see which block devices are available:
 
 Windows has
 [special restrictions](https://support.microsoft.com/en-us/help/942448/changes-to-the-file-system-and-to-the-storage-stack-to-restrict-direct)
-concerning writing to block devices. You must lock the block device using
-`setFSCTL_LOCK_VOLUME()` immediately after opening the file descriptor. On other
-platforms it is good practice to lock the block device by providing either the
-`O_EXCL` or `O_EXLOCK` flag when opening:
+concerning writing to block devices. You must lock the block device by providing
+the `O_EXLOCK` flag when opening the file descriptor, or else by calling
+`setFSCTL_LOCK_VOLUME()` after opening the file descriptor. On other platforms
+it is good practice to lock the block device by providing either the `O_EXCL` or
+`O_EXLOCK` flag when opening the file descriptor:
 
 **O_EXCL** *(Linux)*
 
@@ -196,15 +188,22 @@ is used without `O_CREAT`. There is one exception: on Linux 2.6 and later,
 the block device is in use by the system e.g. if it is mounted, `fs.open()` will
 fail with an `EBUSY` error.
 
-**O_EXLOCK** *(macOS)*
+**O_EXLOCK** *(macOS, Windows)*
 
 Provide as a flag to `fs.open()` when opening a block device or regular file to
-obtain an exclusive mandatory (and not just advisory) lock. When opening a
-regular file, `fs.open()` will block until any existing lock is released. While
-adding `O_NONBLOCK` can avoid this, it also introduces other IO semantics. Using
-`O_EXLOCK` should therefore be limited to opening a block device. If the block
-device is in use by the system e.g. if it is mounted, `fs.open()` will fail with
-an `EBUSY` error.
+obtain an exclusive mandatory (and not just advisory) lock.
+
+On macOS, when opening a regular file with `O_EXLOCK`, `fs.open()` will block
+until any existing lock is released. While adding `O_NONBLOCK` can avoid this,
+it also introduces other IO semantics. Using `O_EXLOCK` should therefore be
+limited to opening a block device on macOS. If the block device is in use by the
+system, i.e. it is mounted, `fs.open()` will fail with an `EBUSY` error.
+
+On Windows, `O_EXLOCK` is supported as of [libuv 1.17.0](https://github.com/libuv/libuv/commit/1c4de1916e36f8462c48a36ce7c88b247465f3cf)
+(i.e. Node 9.3.0 and up), where `O_EXLOCK` is mapped to an
+[exclusive sharing mode](https://msdn.microsoft.com/en-us/library/windows/desktop/aa363858(v=vs.85).aspx)
+of 0. If the block device or regular file is already open, `fs.open()` will fail
+with an `EBUSY` error.
 
 **setFSCTL_LOCK_VOLUME(fd, value, callback)** *(Windows)*
 

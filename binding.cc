@@ -532,13 +532,31 @@ NAN_METHOD(setFSCTL_LOCK_VOLUME) {
 }
 
 NAN_MODULE_INIT(Init) {
+// On Windows, libuv maps these flags as follows:
+// UV_FS_O_DIRECT  >  FILE_FLAG_NO_BUFFERING
+// UV_FS_O_DSYNC   >  FILE_FLAG_WRITE_THROUGH
+// UV_FS_O_EXLOCK  >  SHARING MODE = 0
+// UV_FS_O_SYNC    >  FILE_FLAG_WRITE_THROUGH
+#if defined(_WIN32) && defined(UV_FS_O_DIRECT) && !defined(O_DIRECT)
+# define O_DIRECT  UV_FS_O_DIRECT
+#endif
+#if defined(_WIN32) && defined(UV_FS_O_DSYNC) && !defined(O_DSYNC)
+# define O_DSYNC   UV_FS_O_DSYNC
+#endif
+#if defined(_WIN32) && defined(UV_FS_O_EXLOCK) && !defined(O_EXLOCK)
+# define O_EXLOCK  UV_FS_O_EXLOCK
+#endif
+#if defined(_WIN32) && defined(UV_FS_O_SYNC) && !defined(O_SYNC)
+# define O_SYNC    UV_FS_O_SYNC
+#endif
+
 #if defined(O_DIRECT)
   NODE_DEFINE_CONSTANT(target, O_DIRECT);
 #endif
 #if defined(O_DSYNC)
   NODE_DEFINE_CONSTANT(target, O_DSYNC);
 #endif
-#if defined(O_EXCL)
+#if defined(O_EXCL) && !defined(_WIN32)
   NODE_DEFINE_CONSTANT(target, O_EXCL);
 #endif
 #if defined(O_EXLOCK)
