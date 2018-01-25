@@ -32,8 +32,8 @@ regular file:
 `O_DIRECT` on macOS).
 * A `value` of `0` turns data caching back on.
 
-Please note that turning data caching off with `F_NOCACHE` will not purge any
-previously cached pages. Subsequent direct reads may continue to return
+Please note that turning data caching off with `F_NOCACHE` [will not purge any
+previously cached pages](https://lists.apple.com/archives/filesystem-dev/2007/Sep/msg00012.html). Subsequent direct reads may continue to return
 cached pages if they exist, and concurrent processes may continue to populate
 the cache through non-direct reads. To ensure direct reads on macOS (for example
 when data scrubbing) you should set `F_NOCACHE` as soon as possible to avoid
