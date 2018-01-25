@@ -74,13 +74,13 @@ should use `getBlockDevice()` below to get the actual physical sector size of
 the block device.
 * Buffers are instances of Node's `Buffer` class and have the same methods and
 properties, except that they are also aligned.
-* Buffers are allocated using the appropriate C++ call (either
+* Buffers are allocated using the appropriate call (either
 [`posix_memalign`](http://man7.org/linux/man-pages/man3/posix_memalign.3.html)
 or [`_aligned_malloc`](https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/aligned-malloc)
 depending on the platform).
 * **Buffers are not zero-filled.** The contents of newly created aligned Buffers
 are unknown and *may contain sensitive data*.
-* Buffers are automatically freed using the appropriate C++ call when garbage
+* Buffers are automatically freed using the appropriate call when garbage
 collected in V8 (either `free()` or `_aligned_free()` depending on the
 platform).
 
