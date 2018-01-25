@@ -28,8 +28,20 @@ enable Direct Memory Access.
 Turns data caching off or on for an open file descriptor for a block device or
 regular file:
 
-* A `value` of `1` turns data caching off (this is the equivalent of `O_DIRECT`).
+* A `value` of `1` turns data caching off (this is the nearest equivalent of
+`O_DIRECT` on macOS).
 * A `value` of `0` turns data caching back on.
+
+Please note that turning data caching off with `F_NOCACHE` will not purge any
+previously cached pages. Subsequent direct reads may continue to return
+cached pages if they exist, and concurrent processes may continue to populate
+the cache through non-direct reads. To ensure direct reads on macOS (for example
+when data scrubbing) you should set `F_NOCACHE` as soon as possible to avoid
+populating the cache yourself.
+
+Alternatively, if you want to ensure initial boot conditions with a cold disk
+buffer cache, you can purge the entire cache for all files using `sudo purge`.
+Please note that this will affect system performance.
 
 **Coming Soon** *(Windows)*
 
