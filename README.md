@@ -168,7 +168,7 @@ You can use these shell commands to see which block devices are available:
 
 `$ wmic diskdrive list brief` *(Windows)*
 
-## Locking a Block Device
+## Mandatory Locks
 
 Windows has
 [special restrictions](https://support.microsoft.com/en-us/help/942448/changes-to-the-file-system-and-to-the-storage-stack-to-restrict-direct)
@@ -230,7 +230,7 @@ open files before dismounting.
 * Without a successful lock operation, a dismounted volume may be remounted by
 any process at any time.
 
-## Locking a Regular File
+## Advisory Locks
 
 **setFlock(fd, value, callback)** *(FreeBSD, Linux, macOS)*
 
