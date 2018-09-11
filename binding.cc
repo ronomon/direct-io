@@ -258,7 +258,7 @@ class GetBlockDeviceWorker : public Nan::AsyncWorker {
       Nan::Undefined(),
       device
     };
-    callback->Call(2, argv);
+    callback->Call(2, argv, async_resource);
   }
 
  private:
@@ -298,7 +298,7 @@ class SetF_NOCACHEWorker : public Nan::AsyncWorker {
     v8::Local<v8::Value> argv[] = {
       Nan::Undefined()
     };
-    callback->Call(1, argv);
+    callback->Call(1, argv, async_resource);
   }
 
  private:
@@ -348,7 +348,7 @@ class SetFlockWorker : public Nan::AsyncWorker {
     v8::Local<v8::Value> argv[] = {
       Nan::Undefined()
     };
-    callback->Call(1, argv);
+    callback->Call(1, argv, async_resource);
   }
 
  private:
@@ -401,7 +401,7 @@ class SetFSCTL_LOCK_VOLUMEWorker : public Nan::AsyncWorker {
     v8::Local<v8::Value> argv[] = {
       Nan::Undefined()
     };
-    callback->Call(1, argv);
+    callback->Call(1, argv, async_resource);
   }
 
  private:
