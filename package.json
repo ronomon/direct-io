@@ -3,6 +3,11 @@
   "version": "2.4.0",
   "description": "Direct IO helpers for block devices and regular files on FreeBSD, Linux, macOS and Windows.",
   "main": "binding.node",
+  "files": [
+    "benchmark.js",
+    "binding.cc",
+    "binding.gyp"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ronomon/direct-io.git"
