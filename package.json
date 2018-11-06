@@ -48,6 +48,7 @@
   },
   "homepage": "https://github.com/ronomon/direct-io#readme",
   "scripts": {
+    "prepublishOnly": "rm -f binding.node",
     "postinstall": "node-gyp clean"
   },
   "dependencies": {
