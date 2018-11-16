@@ -153,7 +153,7 @@ function parseType(path) {
   }
 }
 
-var bufferUnaligned = Buffer.alloc(SIZE, 255);
+var bufferUnaligned = Buffer.alloc(1 + SIZE, 255).slice(1, 1 + SIZE);
 var bufferAligned = binding.getAlignedBuffer(SIZE, 4096);
 var length = bufferAligned.length;
 while (length--) bufferAligned[length] = 255;
