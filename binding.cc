@@ -45,7 +45,7 @@ int read_serial_number(int fd, char *serial_number, int &serial_number_size) {
     printf("Error: read_serial_number: version < 30000\n");
     return -2;
   }
-  
+
   sg_io_hdr_t io_hdr;
   unsigned char dxferp[255];
   unsigned char cmdp[6] = { 0x12, 0x01, 0x80, 0x00, sizeof(dxferp), 0x00 };
@@ -130,7 +130,7 @@ class GetBlockDeviceWorker : public Nan::AsyncWorker {
     uint32_t _physical_sector_size;
     uint64_t _logical_sectors;
     if (ioctl(fd, DKIOCGETBLOCKSIZE, &_logical_sector_size) == -1) {
-      return SetErrorMessage("DKIOCGETBLOCKSIZE failed"); 
+      return SetErrorMessage("DKIOCGETBLOCKSIZE failed");
     }
     if (ioctl(fd, DKIOCGETPHYSICALBLOCKSIZE, &_physical_sector_size) == -1) {
       return SetErrorMessage("DKIOCGETPHYSICALBLOCKSIZE failed");
@@ -157,10 +157,10 @@ class GetBlockDeviceWorker : public Nan::AsyncWorker {
     query.PropertyId = StorageAccessAlignmentProperty;
     if (
       DeviceIoControl(
-        handle, 
-        IOCTL_STORAGE_QUERY_PROPERTY, 
-        &query, 
-        sizeof(query), 
+        handle,
+        IOCTL_STORAGE_QUERY_PROPERTY,
+        &query,
+        sizeof(query),
         &alignment,
         sizeof(alignment),
         &bytes,
@@ -420,8 +420,8 @@ NAN_METHOD(getAlignedBuffer) {
       "bad arguments, expected: (uint32 size, uint32 alignment)"
     );
   }
-  const size_t size = info[0]->Uint32Value();
-  const size_t alignment = info[1]->Uint32Value();
+  const size_t size = Nan::To<uint32_t>(info[0]).FromJust();
+  const size_t alignment = Nan::To<uint32_t>(info[1]).FromJust();
   if (size == 0) return Nan::ThrowError("size must not be 0");
   if (alignment == 0) return Nan::ThrowError("alignment must not be 0");
   if (alignment & (alignment - 1)) {
@@ -460,7 +460,7 @@ NAN_METHOD(getBlockDevice) {
       "bad arguments, expected: (uint32 fd, function callback)"
     );
   }
-  const int fd = info[0]->Uint32Value();
+  const int fd = Nan::To<uint32_t>(info[0]).FromJust();
   Nan::Callback *callback = new Nan::Callback(info[1].As<v8::Function>());
   Nan::AsyncQueueWorker(new GetBlockDeviceWorker(fd, callback));
 }
@@ -477,8 +477,8 @@ NAN_METHOD(setF_NOCACHE) {
       "bad arguments, expected: (uint32 fd, uint32 value, function callback)"
     );
   }
-  const int fd = info[0]->Uint32Value();
-  const int value = info[1]->Uint32Value();
+  const int fd = Nan::To<uint32_t>(info[0]).FromJust();
+  const int value = Nan::To<uint32_t>(info[1]).FromJust();
   if (value != 0 && value != 1) return Nan::ThrowError("value must be 0 or 1");
   Nan::Callback *callback = new Nan::Callback(info[2].As<v8::Function>());
   Nan::AsyncQueueWorker(new SetF_NOCACHEWorker(fd, value, callback));
@@ -501,11 +501,11 @@ NAN_METHOD(setFlock) {
       "bad arguments, expected: (uint32 fd, uint32 value, function callback)"
     );
   }
-  const int fd = info[0]->Uint32Value();
-  const int value = info[1]->Uint32Value();
+  const int fd = Nan::To<uint32_t>(info[0]).FromJust();
+  const int value = Nan::To<uint32_t>(info[1]).FromJust();
   if (value != 0 && value != 1) return Nan::ThrowError("value must be 0 or 1");
   Nan::Callback *callback = new Nan::Callback(info[2].As<v8::Function>());
-  Nan::AsyncQueueWorker(new SetFlockWorker(fd, value, callback));  
+  Nan::AsyncQueueWorker(new SetFlockWorker(fd, value, callback));
 #endif
 }
 
@@ -521,8 +521,8 @@ NAN_METHOD(setFSCTL_LOCK_VOLUME) {
       "bad arguments, expected: (uint32 fd, uint32 value, function callback)"
     );
   }
-  const int fd = info[0]->Uint32Value();
-  const int value = info[1]->Uint32Value();
+  const int fd = Nan::To<uint32_t>(info[0]).FromJust();
+  const int value = Nan::To<uint32_t>(info[1]).FromJust();
   if (value != 0 && value != 1) return Nan::ThrowError("value must be 0 or 1");
   Nan::Callback *callback = new Nan::Callback(info[2].As<v8::Function>());
   Nan::AsyncQueueWorker(new SetFSCTL_LOCK_VOLUMEWorker(fd, value, callback));
