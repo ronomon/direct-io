@@ -4,7 +4,7 @@ var Node = {
 };
 
 var Queue = require('@ronomon/queue');
-var binding = require('./binding.node');
+var binding = require('.');
 
 const ALIGNED = 1;
 const AMORTIZED_FDATASYNC = 2;

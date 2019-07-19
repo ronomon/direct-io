@@ -3,6 +3,16 @@
 Direct IO helpers for block devices and regular files on FreeBSD, Linux, macOS
 and Windows. *#mechanical-sympathy*
 
+* [Installation](#installation)
+* [Direct memory access](#direct-memory-access)
+* [Buffer alignment](#buffer-alignment)
+* [Synchronous writes](#synchronous-writes)
+* [Block device size and sector size](#block-device-size-and-sector-size)
+* [Block device path and permissions](#block-device-path-and-permissions)
+* [Mandatory locks](#mandatory-locks)
+* [Advisory locks](#advisory-locks)
+* [Benchmark](#benchmark)
+
 ## Installation
 
 ```
@@ -11,16 +21,16 @@ npm install @ronomon/direct-io
 
 ## Direct Memory Access
 
-Direct Memory Access bypasses the filesystem cache and avoids memory copies to
-and from kernel-space, writing and reading directly to and from the disk device
-cache. File I/O is done directly to and from user-space buffers regardless of
-whether the file descriptor is a block device or regular file. To enable Direct
-Memory Access, use the following open flag or method according to the platform:
+Direct memory access bypasses the filesystem cache and avoids memory copies to
+and from kernel space, writing and reading directly to and from the disk device
+cache. File I/O is done directly to and from user space buffers regardless of
+whether the file descriptor is a block device or regular file. To enable direct
+memory access, use the following open flag or method according to the platform:
 
 **O_DIRECT** *(FreeBSD, Linux, Windows)*
 
 Provide as a flag to `fs.open()` when opening a block device or regular file to
-enable Direct Memory Access.
+enable direct memory access.
 
 On Windows, `O_DIRECT` is supported as of
 [libuv 1.16.0](https://github.com/libuv/libuv/commit/4b666bd2d82a51f1c809b2703a91679789c1ec01)
@@ -36,28 +46,28 @@ regular file:
 `O_DIRECT` on macOS).
 * A `value` of `0` turns data caching back on.
 
-Please note that turning data caching off with `F_NOCACHE` [will not purge any
-previously cached pages](https://lists.apple.com/archives/filesystem-dev/2007/Sep/msg00012.html). Subsequent direct reads may continue to return
-cached pages if they exist, and concurrent processes may continue to populate
-the cache through non-direct reads. To ensure direct reads on macOS (for example
-when data scrubbing) you should set `F_NOCACHE` as soon as possible to avoid
-populating the cache yourself.
+Turning data caching off with `F_NOCACHE` [will not purge any previously cached
+pages](https://lists.apple.com/archives/filesystem-dev/2007/Sep/msg00012.html).
+Subsequent direct reads will continue to return cached pages if they exist, and
+concurrent processes may continue to populate the cache through non-direct
+reads. To ensure direct reads on macOS (for example when data scrubbing) you
+should set `F_NOCACHE` as soon as possible to avoid populating the cache.
 
 Alternatively, if you want to ensure initial boot conditions with a cold disk
 buffer cache, you can purge the entire cache for all files using `sudo purge`.
-Please note that this will affect system performance.
+This will affect system performance.
 
 ## Buffer Alignment
 
-When writing or reading to and from a block device or regular file using Direct
-Memory Access, you need to make sure that your buffer is aligned correctly or
+When writing or reading to and from a block device or regular file using direct
+memory access, you need to make sure that your buffer is aligned correctly or
 you may receive an `EINVAL` error or be switched back silently to non-DMA mode.
 
 To be aligned correctly, the address of the allocated memory must be a multiple
 of `alignment`, i.e. the physical sector size (not logical sector size) of the
 block device. Buffers allocated using Node's `Buffer.alloc()` and related
-methods will typically not meet these alignment requirements. Use
-`getAlignedBuffer()` to create properly aligned buffers:
+methods will not meet these alignment requirements. Use `getAlignedBuffer()` to
+create aligned buffers:
 
 **getAlignedBuffer(size, alignment)** *(FreeBSD, Linux, macOS, Windows)*
 
@@ -65,8 +75,12 @@ Returns an aligned buffer:
 
 * `size` must be greater than 0, and a multiple of the physical sector size of
 the block device (typically 512 bytes or 4096 bytes).
-* `alignment` must be greater than 0, a power of two, and a multiple of the
-physical sector size of the block device.
+* `size` must be at most `require('buffer').kMaxLength` bytes.
+* `alignment` must be at least 8 bytes for portability between 32-bit and 64-bit
+systems.
+* `alignment` must be a power of two, and a multiple of the physical sector size
+of the block device.
+* `alignment` must be at most 4194304 bytes for a safe arbitrary upper bound.
 * An alignment of 4096 bytes should be compatible with
 [Advanced Format](https://en.wikipedia.org/wiki/Advanced_Format) drives as well
 as backwards compatible with 512 sector drives. If you want to be sure, you
@@ -78,11 +92,12 @@ properties, except that they are also aligned.
 [`posix_memalign`](http://man7.org/linux/man-pages/man3/posix_memalign.3.html)
 or [`_aligned_malloc`](https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/aligned-malloc)
 depending on the platform).
-* **Buffers are not zero-filled.** The contents of newly created aligned Buffers
-are unknown and *may contain sensitive data*.
+* Buffers are zero-filled with `memset()` when allocated for safety.
 * Buffers are automatically freed using the appropriate call when garbage
-collected in V8 (either `free()` or `_aligned_free()` depending on the
-platform).
+collected in V8, either `free()` or `_aligned_free()` depending on the
+platform.
+* `getAlignedBuffer()` should be used judiciously as the algorithm that realizes
+the alignment constraint can incur significant memory overhead.
 
 Further reading:
 
@@ -90,15 +105,32 @@ Further reading:
 
 ## Synchronous Writes
 
-Direct Memory Access will write directly to the disk device cache but not
+Direct memory access will write directly to the disk device cache but not
 necessarily to the disk device storage medium. To ensure that your data is
 flushed from the disk device cache to the disk device storage medium, you should
 also open the block device or regular file using the `O_DSYNC` or `O_SYNC`
 open flags. These are the equivalent of calling `fs.fdatasync()` or `fs.fsync()`
-respectively after every write. Please note that some file systems have had bugs
-in the past where calling `fs.fdatasync()` or `fs.fsync()` on a regular file
-would only force a flush if the page cache was dirty, so that bypassing the page
-cache using `O_DIRECT` meant the disk device cache was never actually flushed.
+respectively after every write, but with less system call overhead, and with the
+advantage that they encourage the disk device to do real work during the
+`fs.write()` call, which can be useful when overlapping compute-intensive work
+with IO.
+
+Some systems implement the `O_DSYNC` and `O_SYNC` open flags by setting the
+Force Unit Access (FUA) flag, which works for SCSI
+[but](https://perspectives.mvdirona.com/2008/04/disks-lies-and-damn-disks/)
+[not](https://blogs.msdn.microsoft.com/oldnewthing/20170510-00/?p=95505) for
+EIDE and SATA drivers.
+
+Conversely, some systems have had bugs where calling `fs.fdatasync()`
+or `fs.fsync()` on a regular file would force a flush only if the page cache was
+dirty, so that bypassing the page cache using `O_DIRECT` meant the disk device
+cache was never flushed.
+
+This means that the `O_DSYNC` and `O_SYNC` open flags are not sufficient on
+their own, but should be combined with `fs.fdatasync()` or `fs.fsync()` for
+durability or write barriers. This does not mean that these open flags are not
+useful. As we have already seen, they can reduce the latency of the eventual
+fsync call, eliminating latency spikes.
 
 **O_DSYNC** *(FreeBSD, Linux, macOS, Windows)*
 
@@ -123,30 +155,30 @@ On Windows, synchronous writes are supported as of
 (i.e. Node 9.2.0 and up), where `O_DSYNC` and `O_SYNC` are both mapped to
 [FILE_FLAG_WRITE_THROUGH](https://support.microsoft.com/en-za/help/99794/info-file-flag-write-through-and-file-flag-no-buffering).
 
-## Block Device Size and Sector Sizes
+## Block Device Size and Sector Size
 
-Please note that `fs.fstat()` will not work at all on Windows for a block
-device, and will not report the correct size for a block device on other
-platforms. You should use `getBlockDevice()` instead:
+Node's `fs.fstat()` will not work at all for a block device on Windows, and will
+not report the correct size for a block device on other platforms. You should
+use `getBlockDevice()` instead:
 
 **getBlockDevice(fd, callback)** *(FreeBSD, Linux, macOS, Windows)*
 
 Returns an object with the following properties:
 
-* `logicalSectorSize` - The size of a logical sector in bytes. Many drives
-advertise a backwards compatible logical sector size of 512 bytes when in fact
-their physical sector size is 4096 bytes.
+* `logicalSectorSize` - The size of a logical sector in bytes. Some drives will
+advertise a backwards compatible logical sector size of 512 bytes while their
+physical sector size is in fact 4096 bytes.
 
 * `physicalSectorSize` - The size of a physical sector in bytes. You should use
 this to decide on the `size` and `alignment` parameters when getting aligned
 buffers so that reads and writes are always a multiple of the physical sector
 size. **Some virtual devices may report a `physicalSectorSize` of 0 bytes.**
 
-* `serialNumber` - The serial number reported by the device. *(FreeBSD, Linux)*
-
 * `size` - The total size of the block device in bytes.
 
-## Opening a Block Bevice
+* `serialNumber` - The serial number reported by the device. *(FreeBSD, Linux)*
+
+## Block Device Path and Permissions
 
 You will need sudo or administrator privileges to open a block device. You can
 use `fs.open(path, flags)` to open a block device, where the path you provide
@@ -247,10 +279,13 @@ file, or until the file descriptor is closed, either directly through
 
 ## Benchmark
 
-The performance of various block sizes and open flags can vary across operating
-systems and between hard drives and solid state drives. Use the included
-benchmark script to benchmark various block sizes and open flags on the local
-file system (by default) or on a specific block device or regular file:
+The write performance of various block sizes and open flags can vary across
+operating systems and between hard drives and solid state drives. Use the
+included write benchmark to benchmark various block sizes and open flags on the
+local file system (by default) or on a specific block device or regular file:
+
+**WARNING: The write benchmark will erase the contents of the specified block
+device or regular file if any.**
 
 ```
 [sudo] node benchmark.js [device|file]

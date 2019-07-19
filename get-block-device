@@ -1,0 +1,27 @@
+#!/usr/bin/env node
+var fs = require('fs');
+var binding = require('.');
+
+function exit(message) {
+  console.error(message);
+  process.exit(1);
+}
+
+var device = process.argv[2];
+if (!device) return exit('Usage: get-block-device <path>');
+
+var fd = fs.openSync(device, 'r');
+binding.getBlockDevice(fd,
+  function(error, result) {
+    if (error) return exit('Error: ' + error.message);
+    console.log('');
+    for (var key in result) {
+      var name = key[0].toUpperCase() + key.slice(1);
+      name = name.replace(/([A-Z])/g, ' $1');
+      name = name.trim();
+      name = name.padStart(22, ' ');
+      console.log(name + ': ' + JSON.stringify(result[key]));
+    }
+    console.log('');
+  }
+);
