@@ -640,19 +640,37 @@ static napi_value set_fsctl_lock_volume(napi_env env, napi_callback_info info) {
 
 static napi_value Init(napi_env env, napi_value exports) {
   // We require assert() for safety (our asserts are not side-effect free):
-  #ifdef NDEBUG
-    fprintf(stderr, "NDEBUG compile flag not supported\n");
-    abort();
-  #endif
+#ifdef NDEBUG
+  fprintf(stderr, "NDEBUG compile flag not supported\n");
+  abort();
+#endif
   // We use an int to represent the size of an aligned buffer.
   // INT_MAX must therefore be sufficient for Node's own buffer.kMaxLength:
   assert(INT_MAX >= 2147483647);
+  // On Linux, some versions of libuv did not define UV_FS_O_DIRECT correctly:
+  // As a result, UV_FS_O_DIRECT was set to 0 so we must get O_DIRECT ourselves.
+  // See: https://github.com/libuv/libuv/issues/2420
+#if defined(__linux__) && defined(__arm__)
+  int o_direct = 0x10000;
+#elif defined(__linux__) && defined(__m68k__)
+  int o_direct = 0x10000;
+#elif defined(__linux__) && defined(__mips__)
+  int o_direct = 0x08000;
+#elif defined(__linux__) && defined(__powerpc__)
+  int o_direct = 0x20000;
+#elif defined(__linux__) && defined(__s390x__)
+  int o_direct = 0x04000;
+#elif defined(__linux__) && defined(__x86_64__)
+  int o_direct = 0x04000;
+#else
+  int o_direct = UV_FS_O_DIRECT;
+#endif
   // On Windows, libuv maps these flags as follows:
   // UV_FS_O_DIRECT > FILE_FLAG_NO_BUFFERING
   // UV_FS_O_DSYNC  > FILE_FLAG_WRITE_THROUGH
   // UV_FS_O_EXLOCK > SHARING MODE=0
   // UV_FS_O_SYNC   > FILE_FLAG_WRITE_THROUGH
-  set_int(env, exports, "O_DIRECT", UV_FS_O_DIRECT);
+  set_int(env, exports, "O_DIRECT", o_direct);
   set_int(env, exports, "O_DSYNC", UV_FS_O_DSYNC);
   set_int(env, exports, "O_EXCL", UV_FS_O_EXCL);
   set_int(env, exports, "O_EXLOCK", UV_FS_O_EXLOCK);

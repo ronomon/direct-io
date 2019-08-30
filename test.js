@@ -22,6 +22,19 @@ var Node = {
   }
 );
 
+if (Node.process.platform !== 'darwin') {
+  // On Linux, prevent regressions: https://github.com/libuv/libuv/issues/2420
+  // On Windows, we expect O_DIRECT to be mapped to FILE_FLAG_NO_BUFFERING.
+  assert(binding.O_DIRECT > 0);
+}
+if (Node.process.platform === 'darwin' || Node.process.platform === 'win32') {
+  assert(binding.O_EXLOCK > 0);
+} else {
+  assert(binding.O_EXCL > 0);
+}
+assert(binding.O_DSYNC > 0);
+assert(binding.O_SYNC > 0);
+
 [
   'getAlignedBuffer',
   'getBlockDevice',
