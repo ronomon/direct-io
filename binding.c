@@ -592,7 +592,8 @@ static napi_value get_aligned_buffer(napi_env env, napi_callback_info info) {
   assert(((uintptr_t)(const void *)(ptr) & (alignment - 1)) == 0);
   memset(ptr, 0, size);
   napi_value buffer;
-  OK(napi_create_external_buffer(env, size, ptr, free_aligned, NULL, &buffer));
+  void* copied_data = NULL;
+  OK(napi_create_buffer_copy(env, size, ptr, &copied_data, &buffer));
   return buffer;
 }
 
